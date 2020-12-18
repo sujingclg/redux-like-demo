@@ -1,0 +1,11 @@
+.App {
+  padding: 40px;
+}
+
+.list li {
+  margin: 10px 0;
+}
+
+.list li span {
+  margin-right: 20px;
+}
