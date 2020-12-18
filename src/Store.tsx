@@ -1,4 +1,4 @@
-import React, { createContext, Dispatch, useCallback, useContext, useEffect, useMemo, useReducer } from 'react';
+import React, { createContext, Dispatch, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { IListItem, IStoreState } from './data';
 import { queryList } from './service';
 
@@ -24,19 +24,20 @@ const reducer = (state: IStoreState, action: Action) => {
 
 const initialState: IStoreState = { byId: {}, allIds: [] };
 
-const StoreContext = createContext<{ state: IStoreState, dispatch?: Dispatch<Action> }>({
+const StoreContext = createContext<{ state: IStoreState, loading: boolean; dispatch?: Dispatch<Action> }>({
   state: initialState,
+  loading: false,
 });
 
 export const useStoreState = () => {
-  const { state } = useContext(StoreContext);
+  const { state, loading } = useContext(StoreContext);
 
   const list = useMemo(() => {
     const { byId, allIds } = state;
     return allIds.map(id => byId[id]).filter(i => i) as NonNullable<IListItem[]>;
   }, [state]);
 
-  return { list };
+  return { list, loading };
 }
 
 export const useStoreActions = () => {
@@ -61,13 +62,16 @@ export const useStoreActions = () => {
 
 const Store: React.FC = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [loading, setLoading] = useState(false);
   
   useEffect(() => {
     let didCancel = false;
     (async () => {
+      setLoading(true);
       const res = await queryList();
       if (res && !didCancel) {
         dispatch({ type: 'saveState', payload: res });
+        setLoading(false);
       }
     })();
     return () => {
@@ -76,7 +80,7 @@ const Store: React.FC = ({ children }) => {
   }, []);
 
   return (
-    <StoreContext.Provider value={{ state, dispatch }}>{children}</StoreContext.Provider>
+    <StoreContext.Provider value={{ state, loading, dispatch }}>{children}</StoreContext.Provider>
   );
 };
 

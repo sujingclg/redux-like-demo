@@ -5,7 +5,7 @@ import "./index.css";
 function App() {
   const countRef = useRef(200);
 
-  const { list } = useStoreState();
+  const { list, loading } = useStoreState();
   const { onAdd, onRemove } = useStoreActions();
 
   const handleAdd = () => {
@@ -19,6 +19,7 @@ function App() {
         <button onClick={handleAdd}>Add</button>
       </div>
       <div>
+        <div>{loading ? 'loading...' : 'ready'}</div>
         <ul className="list">
           {list.map(item => (
             <li key={item.id}>
